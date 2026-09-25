@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MagNerveX Command Generator V1.02</title>
+  <style>
+    :root{
+      --bg1:#0f172a;
+      --bg2:#111827;
+      --card:#0b1220cc;
+      --line:#23314d;
+      --txt:#e5e7eb;
+      --muted:#94a3b8;
+      --accent:#38bdf8;
+      --ok:#22c55e;
+      --danger:#ef4444;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:"Segoe UI", Tahoma, sans-serif;
+      color:var(--txt);
+      background:
+        radial-gradient(1200px 600px at 0% 0%, #1e293b 0%, transparent 60%),
+        radial-gradient(1200px 600px at 100% 100%, #0b3b4f 0%, transparent 60%),
+        linear-gradient(120deg,var(--bg1),var(--bg2));
+      min-height:100vh;
+    }
+
+    .container{
+      max-width:1200px;
+      margin:26px auto;
+      padding:16px;
+    }
+
+    .title{
+      font-size:1.75rem;
+      font-weight:800;
+      margin-bottom:6px;
+      letter-spacing:.2px;
+    }
+
+    .subtitle{
+      color:var(--muted);
+      margin-bottom:18px;
+      font-size:1.08rem;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.1fr 1fr;
+      gap:16px;
+    }
+
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      backdrop-filter: blur(8px);
+      box-shadow:0 8px 28px rgba(0,0,0,.25);
+    }
+
+    .card h2{
+      margin:0 0 14px 0;
+      font-size:1.3rem;
+      font-weight:700;
+    }
+
+    .field{ margin-bottom:12px; }
+
+    label{
+      display:block;
+      font-size:1.08rem;
+      font-weight:650;
+      color:#d7e0ee;
+      margin-bottom:7px;
+    }
+
+    input{
+      width:100%;
+      padding:12px 12px;
+      border-radius:10px;
+      border:1px solid #334155;
+      background:#0b1325;
+      color:var(--txt);
+      font-size:1.12rem;
+      font-weight:600;
+      outline:none;
+      transition:.2s;
+    }
+
+    input:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(56,189,248,.18);
+    }
+
+    input.invalid{
+      color:var(--danger) !important;
+      border-color:var(--danger) !important;
+      box-shadow:0 0 0 3px rgba(239,68,68,.15) !important;
+    }
+
+    .hint{
+      font-size:.93rem;
+      color:var(--muted);
+      margin-top:5px;
+    }
+
+    .time-row{
+      display:flex;
+      gap:10px;
+      align-items:flex-end;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .time-field{ width:130px; }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    button{
+      border:0;
+      border-radius:10px;
+      padding:11px 15px;
+      font-weight:700;
+      font-size:1.05rem;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,#0ea5e9,#22d3ee);
+      color:#001018;
+    }
+
+    .btn-secondary{
+      background:#1f2937;
+      color:#e2e8f0;
+      border:1px solid #374151;
+    }
+
+    .btn-copy{
+      background:linear-gradient(135deg,#22c55e,#86efac);
+      color:#052e16;
+    }
+
+    .output-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:4px;
+    }
+
+    /* COPY success message under COPY button */
+    .copy-wrap{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:4px;
+    }
+    .copy-msg{
+      min-height:18px;
+      font-size:.92rem;
+      color:var(--ok);
+      font-weight:700;
+      opacity:0;
+      transition:opacity .2s;
+    }
+    .copy-msg.show{ opacity:1; }
+
+    .status{
+      font-size:1rem;
+      color:var(--muted);
+      min-height:20px;
+      margin-bottom:6px;
+    }
+
+    textarea{
+      width:100%;
+      min-height:290px;
+      resize:vertical;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid #334155;
+      background:#020617;
+      color:#d1fae5;
+      font-family:Consolas,"Courier New",monospace;
+      line-height:1.6;
+      font-size:1.02rem;
+    }
+
+    .ascii-box{
+      margin-top:12px;
+      padding:10px;
+      border:1px dashed #334155;
+      border-radius:10px;
+      background:#030b1b;
+      font-family:Consolas, monospace;
+      white-space:pre-wrap;
+      color:#cbd5e1;
+      min-height:110px;
+      font-size:1rem;
+    }
+
+    .msg{
+      padding:9px 10px;
+      border-radius:8px;
+      margin-top:8px;
+      display:none;
+      font-size:1rem;
+      font-weight:600;
+    }
+
+    .msg.error{
+      color:#fecaca;
+      background:#7f1d1d33;
+      border:1px solid #7f1d1d;
+    }
+
+    .msg.warn{
+      color:#fde68a;
+      background:#78350f33;
+      border:1px solid #78350f;
+    }
+
+    .msg.ok{
+      color:#bbf7d0;
+      background:#14532d33;
+      border:1px solid #14532d;
+    }
+
+    @media (max-width:600px){
+      .title{font-size:1.52rem}
+      .subtitle{font-size:1.08rem}
+      .card h2{font-size:1.28rem}
+      label{font-size:1.14rem}
+      input{font-size:1.16rem; padding:13px 12px}
+      .time-field{width:110px}
+      button{font-size:1.08rem; padding:12px 14px}
+      .status{font-size:1.03rem}
+      .copy-msg{font-size:.95rem}
+    }
+  </style>
+
+  <!-- PWA metadata -->
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MagNervex" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png" />
+</head>
+<body>
+  <div class="container">
+    <div class="title">MagNerveX Command Generator</div>
+    <div class="subtitle">
+      Build command sequence automatically based on input parameters.
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Input Parameters</h2>
+
+        <div class="time-row">
+          <div class="field time-field">
+            <label for="minute">Minute</label>
+            <input id="minute" type="number" min="0" step="1" placeholder="e.g. 12" />
+          </div>
+          <div class="field time-field">
+            <label for="second">Second (optional)</label>
+            <input id="second" type="number" min="0" max="59" step="1" placeholder="0..59" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="freq">Pulse Frequency (0.1 to 25 Hz)</label>
+          <input id="freq" type="number" min="0.1" max="25" step="0.1" placeholder="e.g. 2.5" />
+        </div>
+
+        <div class="field">
+          <label for="ppt">Pulse per train</label>
+          <input id="ppt" type="number" min="1" step="1" placeholder="Required if Frequency >= 1" />
+          <div class="hint">Ignored when Frequency &lt; 1.</div>
+        </div>
+
+        <div class="field">
+          <label for="pauseSec">Pause time (sec)</label>
+          <input id="pauseSec" type="number" min="0" step="0.1" placeholder="Required when Frequency >= 1" />
+        </div>
+
+        <div class="field">
+          <label for="sessions">Number of sessions</label>
+          <input id="sessions" type="number" min="1" step="1" placeholder="e.g. 10" />
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="buildBtn">Generate Commands</button>
+          <button class="btn-secondary" id="clearBtn">Clear</button>
+        </div>
+
+        <div id="errBox" class="msg error"></div>
+        <div id="warnBox" class="msg warn"></div>
+        <div id="okBox" class="msg ok"></div>
+      </div>
+
+      <div class="card">
+        <div class="output-title">
+          <h2 style="margin:0;">HEX Output</h2>
+          <div class="copy-wrap">
+            <button class="btn-copy" id="copyBtn">COPY</button>
+            <div id="copyMsg" class="copy-msg">Copied to clipboard.</div>
+          </div>
+        </div>
+
+        <div id="status" class="status">Ready.</div>
+        <textarea id="hexOutput" readonly placeholder="HEX output appears here..."></textarea>
+
+        <h2 style="margin-top:14px;">ASCII Commands (Preview)</h2>
+        <div id="asciiOutput" class="ascii-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let copyTimer = null;
+
+    function hideMessages() {
+      $("errBox").style.display = "none";
+      $("warnBox").style.display = "none";
+      $("okBox").style.display = "none";
+    }
+
+    function showMessage(type, text) {
+      hideMessages();
+      if (!text) return;
+      let box;
+      if (type === "error") box = $("errBox");
+      else if (type === "warn") box = $("warnBox");
+      else box = $("okBox");
+      box.textContent = text;
+      box.style.display = "block";
+    }
+
+    function showCopySuccess() {
+      const el = $("copyMsg");
+      el.classList.add("show");
+      if (copyTimer) clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => el.classList.remove("show"), 1800);
+    }
+
+    function hideCopySuccess() {
+      const el = $("copyMsg");
+      el.classList.remove("show");
+      if (copyTimer) clearTimeout(copyTimer);
+      copyTimer = null;
+    }
+
+    function asciiToHexWith0A(command) {
+      const hex = Array.from(command)
+        .map(ch => ch.charCodeAt(0).toString(16).padStart(2, "0").toUpperCase())
+        .join(" ");
+      return `${hex} 0A`;
+    }
+
+    function toNumberOrNaN(v) {
+      return v.trim() === "" ? NaN : Number(v);
+    }
+
+    function setInvalidState(input, invalid) {
+      if (invalid) input.classList.add("invalid");
+      else input.classList.remove("invalid");
+    }
+
+    function validateRangeLive() {
+      const minuteEl = $("minute");
+      const secondEl = $("second");
+      const freqEl = $("freq");
+      const pptEl = $("ppt");
+      const pauseEl = $("pauseSec");
+      const sessionsEl = $("sessions");
+
+      const minute = toNumberOrNaN(minuteEl.value);
+      const second = toNumberOrNaN(secondEl.value);
+      const freq = toNumberOrNaN(freqEl.value);
+      const ppt = toNumberOrNaN(pptEl.value);
+      const pause = toNumberOrNaN(pauseEl.value);
+      const sessions = toNumberOrNaN(sessionsEl.value);
+
+      // Per parameter range checks (empty = default style)
+      setInvalidState(minuteEl, minuteEl.value.trim() !== "" && (!Number.isInteger(minute) || minute < 0));
+      setInvalidState(secondEl, secondEl.value.trim() !== "" && (!Number.isInteger(second) || second < 0 || second > 59));
+      setInvalidState(freqEl, freqEl.value.trim() !== "" && (!Number.isFinite(freq) || freq < 0.1 || freq > 25));
+      setInvalidState(sessionsEl, sessionsEl.value.trim() !== "" && (!Number.isInteger(sessions) || sessions < 1));
+
+      // Conditional logic-based checks
+      if (freqEl.value.trim() !== "" && Number.isFinite(freq) && freq >= 1) {
+        // ppt required
+        setInvalidState(pptEl, pptEl.value.trim() === "" || !Number.isInteger(ppt) || ppt < 1);
+        // pause required
+        setInvalidState(pauseEl, pauseEl.value.trim() === "" || !Number.isFinite(pause) || pause < 0);
+      } else {
+        // freq < 1 branch: these are optional (if entered, must still be valid)
+        setInvalidState(pptEl, pptEl.value.trim() !== "" && (!Number.isInteger(ppt) || ppt < 1));
+        setInvalidState(pauseEl, pauseEl.value.trim() !== "" && (!Number.isFinite(pause) || pause < 0));
+      }
+    }
+
+    function validateAndBuild() {
+      hideMessages();
+
+      const minuteStr = $("minute").value.trim();
+      const secondStr = $("second").value.trim();
+      const freqStr = $("freq").value.trim();
+      const pptStr = $("ppt").value.trim();
+      const pauseSecStr = $("pauseSec").value.trim();
+      const sessionsStr = $("sessions").value.trim();
+
+      // Required globals
+      if (minuteStr === "") throw new Error("Minute is required.");
+      if (freqStr === "") throw new Error("Pulse Frequency is required.");
+      if (sessionsStr === "") throw new Error("Number of sessions is required.");
+
+      const minute = Number(minuteStr);
+      const second = secondStr === "" ? 0 : Number(secondStr);
+      const freq = Number(freqStr);
+      const sessions = Number(sessionsStr);
+
+      if (!Number.isInteger(minute) || minute < 0) {
+        throw new Error("Minute must be an integer >= 0.");
+      }
+      if (!Number.isInteger(second) || second < 0 || second > 59) {
+        throw new Error("Second must be an integer in 0..59.");
+      }
+      if (!Number.isFinite(freq) || freq < 0.1 || freq > 25) {
+        throw new Error("Pulse Frequency must be in 0.1..25 Hz.");
+      }
+      if (!Number.isInteger(sessions) || sessions < 1) {
+        throw new Error('"Number of sessions" must be an integer >= 1.');
+      }
+
+      const durationMs = Math.round(1000 * (minute * 60 + second));
+
+      const asciiCommands = [];
+      asciiCommands.push("load");
+      asciiCommands.push(`set duration ${durationMs}`);
+
+      if (freq >= 1) {
+        // Required in this branch
+        if (pptStr === "") throw new Error("Pulse per train is required when Frequency is >= 1.");
+        if (pauseSecStr === "") throw new Error("Pause time is required when Frequency is >= 1.");
+
+        const ppt = Number(pptStr);
+        const pauseSec = Number(pauseSecStr);
+
+        if (!Number.isInteger(ppt) || ppt < 1) {
+          throw new Error("Pulse per train must be an integer >= 1.");
+        }
+        if (!Number.isFinite(pauseSec) || pauseSec < 0) {
+          throw new Error("Pause time must be a number >= 0.");
+        }
+
+        const pulse_period = Math.round((1000000 / freq) - 1);
+        const run_time = Math.round((pulse_period * ppt) / 1000);
+        const pause_time = Math.round(pauseSec * 1000);
+
+        asciiCommands.push(`set period ${pulse_period}`);
+        asciiCommands.push(`set run ${run_time}`);
+        asciiCommands.push(`set pause ${pause_time}`);
+      } else {
+        const pulse_period = 999990;
+        const run_time = 1000;
+        const pause_time = Math.round((1000 / freq) - 1000);
+
+        asciiCommands.push(`set period ${pulse_period}`);
+        asciiCommands.push(`set run ${run_time}`);
+        asciiCommands.push(`set pause ${pause_time}`);
+
+        if (pptStr !== "") {
+          showMessage("warn", "Frequency is below 1 Hz. Pulse per train was ignored.");
+        }
+        if (pauseSecStr !== "") {
+          showMessage("warn", "Frequency is below 1 Hz. Pause input was ignored (auto-calculated).");
+        }
+      }
+
+      asciiCommands.push(`set sessions ${sessions}`);
+      asciiCommands.push("save");
+
+      const hexLines = asciiCommands.map(asciiToHexWith0A);
+      return { asciiCommands, hexLines };
+    }
+
+    function build() {
+      try {
+        hideCopySuccess();
+        validateRangeLive();
+        const result = validateAndBuild();
+
+        $("asciiOutput").textContent = result.asciiCommands.join("\n");
+        $("hexOutput").value = result.hexLines.join("\n");
+        $("status").textContent = `Generated successfully. Commands: ${result.asciiCommands.length}`;
+
+        if ($("warnBox").style.display !== "block") {
+          showMessage("ok", "Output generated successfully.");
+        }
+      } catch (err) {
+        $("asciiOutput").textContent = "";
+        $("hexOutput").value = "";
+        $("status").textContent = "Generation failed.";
+        showMessage("error", err.message || "Unknown error.");
+      }
+    }
+
+    async function copyOutput() {
+      const text = $("hexOutput").value.trim();
+      if (!text) {
+        hideCopySuccess();
+        showMessage("error", 'The output code is empty. Click "Generate Commands" first.');
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(text);
+        showCopySuccess();
+      } catch (_) {
+        $("hexOutput").focus();
+        $("hexOutput").select();
+        document.execCommand("copy");
+        showCopySuccess();
+      }
+    }
+
+    function clearAll() {
+      ["minute", "second", "freq", "ppt", "pauseSec", "sessions"].forEach(id => {
+        const el = $(id);
+        el.value = "";
+        el.classList.remove("invalid");
+      });
+
+      $("asciiOutput").textContent = "";
+      $("hexOutput").value = "";
+      $("status").textContent = "Cleared.";
+      hideMessages();
+      hideCopySuccess();
+    }
+
+    $("buildBtn").addEventListener("click", build);
+    $("copyBtn").addEventListener("click", copyOutput);
+    $("clearBtn").addEventListener("click", clearAll);
+
+    ["minute", "second", "freq", "ppt", "pauseSec", "sessions"].forEach(id => {
+      $(id).addEventListener("input", validateRangeLive);
+      $(id).addEventListener("blur", validateRangeLive);
+    });
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./service-worker.js')
+          .catch(function (error) { console.warn('Service worker registration failed:', error); });
+      });
+    }
+  </script>
+</body>
+</html>
